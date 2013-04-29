@@ -8,12 +8,13 @@
 int init_gauss(int nx, float *p, float *pp);
 int init_velocity(int nx, float *c2);
 int diff(float *p, float *diffarray, float dx, int nx);
+int check_stability(float dx, float vmax, float dt);
 
 int main(void) {
   int nx = 100;   // number of gridpoints
   float tmax = 0.05;// time to run
-  float dt = 0.0003;//
-  float dx=1;
+  float dt = 0.003;//
+  float dx=10;
 
   int nt = tmax/dt;
 
@@ -58,6 +59,7 @@ int main(void) {
   init_velocity(nx,c2);
 
 
+
   // TIMESTEPS
   for (it=0;it<nt;it++) {
 
@@ -82,6 +84,7 @@ int main(void) {
     }
   }
 
+  check_stability(dx, 3000, dt);
 
 
   // END
@@ -125,5 +128,18 @@ int init_velocity(int nx, float *c2) {
       c2[i] = 2000;
     }
   }
+  return 0;
+}
+
+int check_stability(float dx, float vmax, float dt) {
+  float alpha;
+  float maxt;
+  
+
+  alpha = vmax*dt/dx;
+  maxt = dx/vmax;
+
+  printf("dt =\t \t %f \t (should be lesser than %f)\n",dt,maxt);
+  printf("alpha = \t %f \t (should be below 1)\n",alpha);
   return 0;
 }
