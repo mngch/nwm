@@ -73,6 +73,8 @@ int main(void) {
       pmax = (pp[ix] > pmax ? pp[ix] : pmax);
     }
     printf("timestep %d\tat t=%f\tpmax=%f\n",it,it*dt,pmax);
+
+    // add wavelet
     pp[xsource] = pp[xsource] + fwave(it*dt,1000);
 
     fwrite(p,sizeof(p),nx,pFile);
