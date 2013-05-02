@@ -9,12 +9,13 @@ int init_gauss(int nx, float *p, float *pp);
 int init_velocity(int nx, float *c2);
 int diff(float *p, float *diffarray, float dx, int nx);
 int check_stability(float dx, float vmax, float dt);
+float fwave(float t, float efhz);
 
 int main(void) {
   int nx = 100;   // number of gridpoints
   float tmax = 0.05;// time to run
-  float dt = 0.003;//
-  float dx=10;
+  float dt = 0.0003;//
+  float dx=1;
 
   int nt = tmax/dt;
 
@@ -27,17 +28,13 @@ int main(void) {
 
 
   // pressure arrays
-  float *par;
-  float *ppar;
-  float *tmpar;
-  par = (float *) malloc(nx*sizeof(float));
-  ppar = (float *) malloc(nx*sizeof(float)); // pressure previous timestep;
-  tmpar = (float *) malloc(nx*sizeof(float));
+  float *p;
+  float *pp;
+  float *tmp;
+  p = (float *) malloc(nx*sizeof(float));
+  pp = (float *) malloc(nx*sizeof(float)); // pressure previous timestep;
 
-  // pointers to arrays for easy swapping
-  float *p = par;
-  float *pp = ppar;
-  float *tmp = tmpar;
+
 
   // differential array
   float *diffarray;
@@ -67,21 +64,16 @@ int main(void) {
     diff(p,diffarray,dx,nx);
     // SPACE
     for (ix=0;ix<nx;ix++) {
-      tmp[ix] = -pp[ix] + 2*p[ix] + c2[ix]*c2[ix]*dt*dt*diffarray[ix];
-      pmax = (tmp[ix] > pmax ? tmp[ix] : pmax);
+      pp[ix] = -pp[ix] + 2*p[ix] + c2[ix]*dt*dt*diffarray[ix];
+      pmax = (pp[ix] > pmax ? pp[ix] : pmax);
     }
     printf("timestep %d\tat t=%f\tpmax=%f\n",it,it*dt,pmax);
 
     fwrite(p,sizeof(p),nx,pFile);
     // swap arrays
-    //pp= par;
-    //p = tmpar;
-    int i;
-    for (i=0;i<nx;i++) {
-      pp[i] = p[i];
-      p[i] = tmp[i];
-
-    }
+    tmp=p;
+    p =pp;
+    pp=tmp;
   }
 
   check_stability(dx, 3000, dt);
@@ -123,9 +115,9 @@ int init_velocity(int nx, float *c2) {
   int i;
   for (i=0;i<nx;i++) {
     if (i<75) {
-      c2[i] = 3000;
+      c2[i] = 3000*3000;
     } else {
-      c2[i] = 2000;
+      c2[i] = 2000*2000;
     }
   }
   return 0;
@@ -134,7 +126,6 @@ int init_velocity(int nx, float *c2) {
 int check_stability(float dx, float vmax, float dt) {
   float alpha;
   float maxt;
-  
 
   alpha = vmax*dt/dx;
   maxt = dx/vmax;
@@ -143,3 +134,26 @@ int check_stability(float dx, float vmax, float dt) {
   printf("alpha = \t %f \t (should be below 1)\n",alpha);
   return 0;
 }
+
+float fwave(float t, float efhz) {
+
+  static int icall=0;
+  static float pi,pi2,agauss,tcut;
+  float s,tmp;
+
+  /*  printf("in fwave_1 %f %f\n",t,efhz);fflush(stdout);*/
+  if (icall == 0 ) {
+    icall=1;
+    pi=4.*atan(1.);
+    pi2=2.*pi;
+    agauss=0.5*efhz;
+    tcut=1.5/agauss;
+    }
+
+  s=(t-tcut)*agauss;
+  tmp=0;
+  if (fabs(s) < 4.) tmp=exp(-2.*s*s)*cos(pi2*s);
+  /*  printf("in fwave_2 %f %f %f\n",t,efhz,tmp);fflush(stdout);*/
+  return tmp;
+}
+
