@@ -21,4 +21,4 @@ run: $(EXECUTABLE)
 	./$(EXECUTABLE)
 
 show:
-	suaddhead < $(OUTFILE) ns=100 | suflip flip=0| suximage
+	suaddhead < $(OUTFILE) ns=100 | suflip flip=0| sushw key=dt a=300| suximage

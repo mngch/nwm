@@ -16,6 +16,7 @@ int main(void) {
   float tmax = 0.05;// time to run
   float dt = 0.0003;//
   float dx=1;
+  int xsource = 20;     // position of source
 
   int nt = tmax/dt;
 
@@ -60,14 +61,19 @@ int main(void) {
   // TIMESTEPS
   for (it=0;it<nt;it++) {
 
+    // set pmax zero again
+    pmax = 0;
+
     // calculate diff
     diff(p,diffarray,dx,nx);
+
     // SPACE
     for (ix=0;ix<nx;ix++) {
       pp[ix] = -pp[ix] + 2*p[ix] + c2[ix]*dt*dt*diffarray[ix];
       pmax = (pp[ix] > pmax ? pp[ix] : pmax);
     }
     printf("timestep %d\tat t=%f\tpmax=%f\n",it,it*dt,pmax);
+    pp[xsource] = pp[xsource] + fwave(it*dt,1000);
 
     fwrite(p,sizeof(p),nx,pFile);
     // swap arrays
@@ -90,8 +96,10 @@ int init_gauss(int nx, float *p, float *pp) {
 
   int i;
   for (i=0;i<=nx;i++) {
-    pp[i] = exp(-pow(((nx/2-i)*0.4),2));
-    p[i] = exp(-pow(((nx/2-i)*0.4),2));
+    //pp[i] = exp(-pow(((nx/2-i)*0.4),2));
+    //p[i] = exp(-pow(((nx/2-i)*0.4),2));
+    pp[i] = 0;
+    p[i] = 0;
   }
 
   return 0;
