@@ -77,7 +77,7 @@ int main(void) {
     // add wavelet
     pp[xsource] = pp[xsource] + fwave(it*dt,1000);
 
-    fwrite(p,sizeof(p),nx,pFile);
+    fwrite(p,sizeof(float),nx,pFile);
     // swap arrays
     tmp=p;
     p =pp;
